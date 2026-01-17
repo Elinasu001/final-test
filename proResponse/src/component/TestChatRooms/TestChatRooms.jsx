@@ -1,17 +1,19 @@
-
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const TestChatRooms = () => {
     const [rooms, setRooms] = useState([]);
+    const navi = useNavigate();
 
     useEffect(() => {
         // 프론트에서 사용할 5가지 STATUS에 맞는 더미 데이터
         setRooms([
-            { id: 1, name: "방1", estimateStatus: "REQUESTED" },
-            { id: 2, name: "방2", estimateStatus: "QUOTED" },
-            { id: 3, name: "방3", estimateStatus: "MATCHED" },
-            { id: 4, name: "방4", estimateStatus: "DONE" },
-            { id: 5, name: "방5", estimateStatus: "EXPIRED" }
+            { id: 1, name: "홍길동", role: "EXPERT", estimateStatus: "REQUESTED" },
+            { id: 2, name: "김철수", role: "EXPERT", estimateStatus: "QUOTED" },
+            { id: 3, name: "이영희", role: "EXPERT", estimateStatus: "MATCHED" },
+            { id: 4, name: "박민수", role: "EXPERT", estimateStatus: "MATCHED" },
+            { id: 5, name: "정지원", role: "EXPERT", estimateStatus: "DONE" },
+            { id: 6, name: "최유진", role: "USER", estimateStatus: "EXPIRED" }
         ]);
     }, []);
 
@@ -20,7 +22,7 @@ const TestChatRooms = () => {
 
     // 각 버튼 클릭 시 동작 예시
     const handleCreateChatRoom = (roomId) => {
-        alert(`채팅방(${roomId}) 입장!`);
+        navi(`/chatRoom/${roomId}`);
     };
     const handleSendEstimate = (roomId) => {
         alert(`견적 보내기: ${roomId}`);
@@ -36,7 +38,7 @@ const TestChatRooms = () => {
                 {rooms.map(room => (
                     <li key={room.id}>
                         <div>
-                            <b>방 이름:</b> {room.name} / <b>견적상태:</b> {room.estimateStatus}
+                            <b>{room.name} {room.role === 'EXPERT' ? '전문가님' : '님'}의 채팅방입니다.</b> / <b>견적상태:</b> {room.estimateStatus}
                         </div>
                         {/* 회원 화면 조건부 렌더링 */}
                         {!isExpert && (

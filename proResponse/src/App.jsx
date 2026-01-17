@@ -1,7 +1,9 @@
+import React from 'react'
 import './App.css'
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import Home from './component/Home/Home.jsx';
 import TestChatRooms from './component/TestChatRooms/TestChatRooms.jsx';
+import ChatRoom from './component/ChatRoom/ChatRoom.jsx';
 
 function App() {
   const navi = useNavigate();
