@@ -1,7 +1,32 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchChatRoomDetails } from "../../api/chat/chatApi.js";
-import './ChatRoom.css';
+import emojiImg from '../../assets/images/common/emoji.png';
+import fileImg from '../../assets/images/common/file.png';
+import payImg from '../../assets/images/common/pay.png';
+import reportImg from '../../assets/images/common/report.png';
+import sendImg from '../../assets/images/common/send.png';
+
+import {
+    ActionButton,
+    ChatActions,
+    ChatBox,
+    ChatHeader,
+    ChatImage,
+    ChatInput,
+    ChatInputContainer,
+    ChatMessages,
+    ChatPopup,
+    ChatPopupOverlay,
+    ChatSubtitle,
+    ChatTitle,
+    CloseButton,
+    EmojiItem,
+    EmojiPicker,
+    IconButton,
+    Message,
+    MessageBubble
+} from './ChatRoom.styled.js';
 
 const ChatRoom = () => {
 
@@ -12,11 +37,45 @@ const ChatRoom = () => {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [messages, setMessages] = useState([
         { text: '홍길동 전문가님의 채팅방입니다.', sender: 'other' },
-        { text: '안녕하세요. 다음 주 월, 금, 토, 일 중 서비스 받고 싶은데 시간 괜찮을까요?', sender: 'me' },
-        { text: '네! 월, 금 저녁 7시 가능합니다!', sender: 'other' }
+        { text: '안녕하세요.', sender: 'me' }
     ]);
-    const wsUrl = `ws://localhost:8080/ws/chat/${id}`;
 
+    const messagesEndRef = useRef(null);
+    // Ref for file input
+    const fileInputRef = useRef(null);
+    // Handle file button click
+    const handleFileButtonClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    // Handle file selection
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.type.startsWith('image/')) {
+                // 이미지 파일이면 미리보기 URL 생성
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    setMessages([...messages, { text: '', image: event.target.result, sender: 'me' }]);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                setMessages([...messages, { text: `파일 첨부: ${file.name}`, sender: 'me' }]);
+            }
+        }
+        // 같은 파일을 연속 첨부할 수 있도록 value 초기화
+        e.target.value = '';
+    };
+    
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]);
+
+    const wsUrl = `ws://localhost:8080/ws/chat/${id}`;
     const emojis = ['😊', '😂', '❤️', '👍', '🙏', '😍', '🎉', '👏', '🔥', '💯', '😢', '😭', '😅', '🤔', '😎', '🙌', '✨', '💪', '👌', '🤗'];
 
     useEffect(() => {
@@ -61,69 +120,86 @@ const ChatRoom = () => {
     };
 
     return (
-        <div className="chat-popup-overlay">
-            <div className="chat-popup">
+        <ChatPopupOverlay>
+            <ChatPopup>
                 {/* 헤더 */}
-                <div className="chat-header">
+                <ChatHeader>
                     <div>
-                        <h2 className="chat-title">채팅하기</h2>
-                        <p className="chat-subtitle">채팅으로 서비스 거래해 보세요.</p>
+                        <ChatTitle>채팅하기</ChatTitle>
+                        <ChatSubtitle>채팅으로 서비스 거래해 보세요.</ChatSubtitle>
                     </div>
-                    <button className="close-button" onClick={handleClose}>✕</button>
-                </div>
+                    <CloseButton onClick={handleClose}>✕</CloseButton>
+                </ChatHeader>
 
                 {/* 액션 버튼 */}
-                <div className="chat-actions">
-                    <button className="action-button">
-                        <span className="icon">🔔</span>
+                <ChatActions>
+                    <ActionButton>
+                        <img src={reportImg} alt="report" />
                         신고하기
-                    </button>
-                    <button className="action-button">
-                        <span className="icon">📝</span>
-                        숭급하기
-                    </button>
-                </div>
+                    </ActionButton>
+                    <ActionButton>
+                        <img src={payImg} alt="pay" />
+                        송금하기
+                    </ActionButton>
+                </ChatActions>
 
                 {/* 메시지 영역 */}
-                <div className="chat-messages">
+                <ChatMessages>
                     {messages.map((msg, index) => (
-                        <div key={index} className={`message ${msg.sender === 'me' ? 'message-me' : 'message-other'}`}>
-                            <div className="message-bubble">
-                                {msg.text}
-                            </div>
-                        </div>
+                        <Message key={index} className={msg.sender === 'me' ? 'message-me' : 'message-other'}>
+                            <MessageBubble $sender={msg.sender}>
+                                {msg.image ? (
+                                    <ChatImage src={msg.image} alt="첨부 이미지" />
+                                ) : (
+                                    msg.text
+                                )}
+                            </MessageBubble>
+                        </Message>
                     ))}
-                </div>
+                    <div ref={messagesEndRef} />
+                </ChatMessages>
 
                 {/* 입력 영역 */}
-                <div className="chat-input-container">
+                <ChatInputContainer>
                     {showEmojiPicker && (
-                        <div className="emoji-picker">
+                        <EmojiPicker>
                             {emojis.map((emoji, index) => (
-                                <button
+                                <EmojiItem
                                     key={index}
-                                    className="emoji-item"
                                     onClick={() => handleEmojiClick(emoji)}
                                 >
                                     {emoji}
-                                </button>
+                                </EmojiItem>
                             ))}
-                        </div>
+                        </EmojiPicker>
                     )}
-                    <input
-                        type="text"
-                        className="chat-input"
-                        placeholder="메시지를 입력하세요"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                    />
-                    <button className="emoji-button" onClick={toggleEmojiPicker}>😊</button>
-                    <button className="attach-button">📎</button>
-                    <button className="send-button" onClick={handleSendMessage}>➤</button>
-                </div>
-            </div>
-        </div>
+                    <ChatBox>
+                        <ChatInput
+                            type="text"
+                            placeholder="메시지를 입력하세요"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                        />
+                        <IconButton className="emoji-button" onClick={toggleEmojiPicker}>
+                            <img src={emojiImg} alt="emoji" />
+                        </IconButton>
+                        <IconButton className="attach-button" onClick={handleFileButtonClick}>
+                            <img src={fileImg} alt="file" />
+                        </IconButton>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            onChange={handleFileChange}
+                        />
+                        <IconButton className="send-button" onClick={handleSendMessage}>
+                            <img src={sendImg} alt="send" />
+                        </IconButton>
+                    </ChatBox>
+                </ChatInputContainer>
+            </ChatPopup>
+        </ChatPopupOverlay>
     );
 }
 

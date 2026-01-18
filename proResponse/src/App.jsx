@@ -1,15 +1,16 @@
-import React from 'react'
-import './App.css'
 import { Route, Routes, useNavigate } from 'react-router-dom';
+import './App.css';
+import CommonGlobalStyles from './assets/styles/CommonGlobalStyles';
+import ChatRoom from './component/ChatRoom/ChatRoom.jsx';
 import Home from './component/Home/Home.jsx';
 import TestChatRooms from './component/TestChatRooms/TestChatRooms.jsx';
-import ChatRoom from './component/ChatRoom/ChatRoom.jsx';
 
 function App() {
   const navi = useNavigate();
 
   return (
       <>
+        <CommonGlobalStyles />
         <nav>
           <h1>ProResponse</h1>
           <ul>
